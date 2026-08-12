@@ -1,9 +1,21 @@
-REPOS := "../mps-base ../mps-os ../mps-users ../mps-optimize ../mps-terminal ../mps-development ../mps-desktop ../mps-hardening ../mps-backup ../examples"
+REPOS := ". ../mps-base ../mps-meta ../mps-os ../mps-users ../mps-optimize ../mps-terminal ../mps-development ../mps-desktop ../mps-hardening ../mps-backup ../examples"
 
-default: status
+default: usage
+
+usage:
+    #!/usr/bin/env bash
+    set -uo pipefail
+    just --list
+
+# Lists all installed collections
+list-collections inventory="home":
+    #!/usr/bin/env bash
+    set -uo pipefail
+    cd ../examples/inventories/{{inventory}} \
+        && ansible-galaxy collection list
 
 # Show git status of every collection repo
-status:
+git-status:
     #!/usr/bin/env bash
     set -uo pipefail
     for repo in {{REPOS}}; do
@@ -12,13 +24,15 @@ status:
             echo "  SKIP: not a git repo"
         else
             git -C "$repo" status -sb
-            git -C "$repo" log --pretty=oneline | head -n 1 | awk '{$1=""; sub(/^ /,""); print}'
+            git -C "$repo" log --pretty=oneline \
+                | head -n 1 \
+                | awk '{$1=""; sub(/^ /,""); print}'
         fi
         echo
     done
 
 # Fast-forward pull every repo; skip dirty working trees
-pull:
+git-pull:
     #!/usr/bin/env bash
     set -uo pipefail
     for repo in {{REPOS}}; do
@@ -38,7 +52,7 @@ pull:
     done
 
 # Add, commit (with MSG), and push every dirty repo
-commit msg:
+git-commit msg:
     #!/usr/bin/env bash
     set -uo pipefail
     committed=0
@@ -58,20 +72,10 @@ commit msg:
             echo
             continue
         fi
-        if ! git -C "$repo" remote get-url origin >/dev/null 2>&1; then
-            if git -C "$repo" add -A && git -C "$repo" commit -m "{{msg}}"; then
-                echo "  COMMITTED LOCALLY (no remote) — run \`just init-remote\` to push"
-                failed=$((failed + 1))
-            else
-                echo "  ERROR: add/commit failed"
-                failed=$((failed + 1))
-            fi
-            echo
-            continue
-        fi
         if git -C "$repo" add -A \
         && git -C "$repo" commit -m "{{msg}}" \
         && git -C "$repo" push; then
+            echo " COMMIT: add/commit/push successful"
             committed=$((committed + 1))
         else
             echo "  ERROR: add/commit/push failed"
@@ -80,4 +84,52 @@ commit msg:
         echo
     done
     echo "Summary: $committed committed+pushed, $skipped clean, $failed failed"
+
+# Show git status of every collection repo
+run-example name inventory playbook:
+    #!/usr/bin/env bash
+    set -uo pipefail
+    export ANSIBLE_NOCOWS=1
+    cd ../examples/inventories/{{name}} \
+        && ansible-playbook \
+            -i inventory_{{inventory}}.ini \
+            playbooks/{{playbook}}.yml
+
+# Force build every collection tarball and force-install to the local collections path
+install-forced collections_path="../.ansible/ansible_collections":
+    #!/usr/bin/env bash
+    set -uo pipefail
+    mkdir -p "{{collections_path}}"
+    built=0
+    installed=0
+    failed=0
+    for repo in {{REPOS}}; do
+        if [ "$(basename "$repo")" = "examples" ]; then
+            continue
+        fi
+        echo "==> $repo"
+        if (cd "$repo" && ansible-galaxy collection build --force 2>&1 | tail -2); then
+            built=$((built + 1))
+        else
+            echo "  ERROR: build failed"
+            failed=$((failed + 1))
+            echo
+            continue
+        fi
+        tarball=$(ls -t "$repo"/mps-*.tar.gz 2>/dev/null | head -1)
+        if [ -z "$tarball" ]; then
+            echo "  ERROR: no tarball after build"
+            failed=$((failed + 1))
+            echo
+            continue
+        fi
+        if ansible-galaxy collection install "$tarball" --force -p "{{collections_path}}" 2>&1 | tail -2; then
+            installed=$((installed + 1))
+        else
+            echo "  ERROR: install failed"
+            failed=$((failed + 1))
+        fi
+        echo
+    done
+    echo "Summary: $built built, $installed installed, $failed failed"
 
