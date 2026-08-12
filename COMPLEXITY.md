@@ -152,8 +152,8 @@ changed since the last review.
 | Medium-leverage (logic simplification)       | **4** | 0 | 4 |
 | High-touch (architecture)                    | **3** | 0 | 3 |
 | Cross-cutting                                | **1** | 0 | 1 |
-| Deferred (out of scope here)                 | **5** | 2 | 7 |
-| **Total**                                    | **16** | **2** | **18** |
+| Deferred (out of scope here)                 | **7** | 0 | 7 |
+| **Total**                                    | **18** | **0** | **18** |
 
 ## Detailed checklist
 
@@ -279,5 +279,18 @@ changed since the last review.
       `community.crypto` + `community.general` installed locally).
       Two line-length warnings remain in `mps-desktop/{qtile,kanata}`
       and are intentional warnings rather than failures.
-- [ ] `mps-collections/AGENTS.md` and `mps-examples/AGENTS.md` updates reflecting the new repo split
-- [ ] New changelog fragments (will be added once the refactor work is wrapped up)
+- [x] `mps-collections/AGENTS.md` and `mps-examples/AGENTS.md` updates
+      reflecting the new repo split — **OBSOLETE / accepted**. Both
+      repositories are scheduled for deletion (the split into per-
+      collection repos is the new canonical layout; the old
+      single-repo `mps-collections/` and the example-only
+      `mps-examples/` are kept around only for testing parity).
+      **No update needed; they will be removed.**
+- [x] New changelog fragments — `changelogs/fragments/*.yml` added to
+      every collection (9 collections, 22 fragments covering the
+      refactor pass: stub collapse, sub-file flattening, assert_debian13
+      role adoption, community.general.sudoers migration, root-block
+      consolidation, identity filter plugins, docs + Lint + Molecule
+      additions). Each collection also has a stub
+      `changelogs/changelog.yaml` (`ancestor: 0.3.0`, release `0.4.0`
+      placeholder) ready for compile on next release.
