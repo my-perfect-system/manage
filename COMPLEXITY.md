@@ -152,8 +152,8 @@ changed since the last review.
 | Medium-leverage (logic simplification)       | **4** | 0 | 4 |
 | High-touch (architecture)                    | **3** | 0 | 3 |
 | Cross-cutting                                | **1** | 0 | 1 |
-| Deferred (out of scope here)                 | 0 | 6 | 6 |
-| **Total**                                    | **11** | **6** | **17** |
+| Deferred (out of scope here)                 | **3** | 4 | 7 |
+| **Total**                                    | **14** | **4** | **18** |
 
 ## Detailed checklist
 
@@ -245,8 +245,14 @@ changed since the last review.
 
 ### Deferred (out of scope here — regenerate in dedicated sessions)
 
-- [ ] Per-role / per-collection **README.md** files
-- [ ] **AGENTS.md** files inside individual collection subdirectories
+- [x] Per-role README.md files — 50 files generated from
+      `argument_specs.yml` + `defaults/main.yml` via the script at
+      `manage/gen_role_readmes.py`.
+- [x] Per-collection **README.md** files — 9 files written
+      (`mps-{base,os,users,optimize,terminal,development,desktop,
+      hardening,backup}/README.md`).
+- [x] **AGENTS.md** files inside individual collection subdirectories
+      — 9 files written.
 - [ ] **Molecule** tests for every role
 - [ ] **Lint configs** (`.ansible-lint`, `.yamllint`) — currently absent in new repos; old `mps-collections/` keeps them as reference
 - [ ] `mps-collections/AGENTS.md` and `mps-examples/AGENTS.md` updates reflecting the new repo split
