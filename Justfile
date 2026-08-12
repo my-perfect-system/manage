@@ -14,6 +14,33 @@ list-collections inventory="home":
     cd ../examples/inventories/{{inventory}} \
         && ansible-galaxy collection list
 
+# Lists every role in every collection with its description
+list-roles:
+    #!/usr/bin/env bash
+    set -uo pipefail
+    for repo in {{REPOS}}; do
+        if [ "$(basename "$repo")" = "examples" ]; then
+            continue
+        fi
+        if [ ! -d "$repo/roles" ]; then
+            continue
+        fi
+        col_name=$(basename "$repo")
+        echo "==> $col_name"
+        for role_dir in "$repo/roles"/*/; do
+            [ -d "$role_dir" ] || continue
+            role_name=$(basename "$role_dir")
+            meta="$role_dir/meta/main.yml"
+            if [ -f "$meta" ]; then
+                desc=$(python3 -c "import yaml,sys; d=yaml.safe_load(open('$meta')) or {}; print(d.get('galaxy_info',{}).get('description',''))" 2>/dev/null || echo "")
+                printf "  %-22s %s\n" "$role_name" "$desc"
+            else
+                printf "  %-22s (no meta)\n" "$role_name"
+            fi
+        done
+        echo
+    done
+
 # Show git status of every collection repo
 git-status:
     #!/usr/bin/env bash
