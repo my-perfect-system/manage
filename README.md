@@ -14,12 +14,9 @@ This is not an Ansible collection — it's a tool / docs repo.
 ```
 manage/
 ├── AGENTS.md                                # cross-collection conventions + per-collection overview table
-├── COMPLEXITY.md                            # role complexity tracker + refactor TODO checklist
 ├── Justfile                                 # cross-repo targets (see below)
 ├── .ansible-lint / .yamllint                # local lint configs (the canonical source for propagation)
-├── gen_role_readmes.py                      # generates per-role README.md from argument_specs.yml + defaults
-├── link_role_readmes.py                     # rewrites `mps.X.Y` cells in collection tables as Markdown links
-└── propagate_lint_configs.py                 # copies canonical .ansible-lint + .yamllint into every collection
+└── *.py                                     # Python helpers — see table below
 ```
 
 ## Quick start
@@ -45,15 +42,15 @@ just install-forced
 
 See [`Justfile`](Justfile) for the full target list.
 
-## Cross-repo documentation scripts
+## Cross-repo scripts
 
 Three Python scripts live here. Each is idempotent and re-runnable:
 
 | Script | Purpose |
 |---|---|
-| `gen_role_readmes.py` | Reads `roles/<role>/{meta/argument_specs.yml,defaults/main.yml,meta/main.yml}` and emits `roles/<role>/README.md`. Run from the repo root. |
-| `link_role_readmes.py` | Rewrites backtick-quoted `mps.X.Y` FQNs in every collection's top-level `README.md` into Markdown links to `roles/<role>/README.md`. |
 | `propagate_lint_configs.py` | Copies `mps-base/.ansible-lint` + `mps-base/.yamllint` into every collection's root, registers them in `galaxy.yml build_ignore`, and fixes missing trailing newlines. |
+| `gen_molecule_scenarios.py` | Writes a 4-file Molecule scenario (`molecule.yml` + `converge.yml` + `verify.yml` + `requirements.yml`) into every role under every collection. |
+| `gen_changelog_fragments.py` | Writes `changelogs/changelog.yaml` + per-change fragments under `changelogs/fragments/*.yml` into every collection. |
 
 Each is referenced from the modified file's commit message; rerunning
 after editing the canonical source in `mps-base` keeps every consumer

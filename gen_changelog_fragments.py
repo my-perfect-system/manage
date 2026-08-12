@@ -240,7 +240,6 @@ def write_changelog_yaml(coll):
         "    changes:\n"
         "      release_summary: |\n"
         "        Refactor + documentation + tests pass — pure code organization, no behavior changes.\n"
-        "        See `manage/COMPLEXITY.md` for the full refactor TODO tracker.\n"
         "      minor_changes:\n"
         '        - "See changelogs/fragments/*.yml for the per-collection breakdown."\n'
     )
