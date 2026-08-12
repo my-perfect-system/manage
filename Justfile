@@ -190,6 +190,42 @@ molecule role:
         exit 1
     fi
 
+# Cross-collection docker wrapper. The Dockerfile lives at `../docker/` and
+# bakes in all nine odem.* collections, the examples repo, and a
+# localhost-only inventory. Build arg defaults match those in the
+# Dockerfile; override per-invocation.
+docker-build tag="odem" *build_args:
+    #!/usr/bin/env bash
+    set -uo pipefail
+    docker build -t "{{tag}}" {{build_args}} ../docker
+
+# Run a playbook inside the odem image. First positional argument is the
+# playbook basename (without .yml); extra args are passed through to
+# `docker run`. Honors `just docker/<playbook>` style invocations via
+# `just docker-run terminal_minimal.yml -i ...`.
+docker-run playbook *extra_args:
+    #!/usr/bin/env bash
+    set -uo pipefail
+    docker run --rm --privileged \
+        -v /sys/fs/cgroup:/sys/fs/cgroup:rw \
+        --tmpfs /run \
+        {{extra_args}} \
+        odem \
+        {{playbook}}
+
+# Drop into a bash shell inside a freshly built (not yet bootstrapped)
+# odem image. Useful for poking at ANSIBLE_COLLECTIONS_PATH, /opt/examples,
+# and the entrypoint before running.
+docker-shell *extra_args:
+    #!/usr/bin/env bash
+    set -uo pipefail
+    docker run --rm --privileged \
+        -v /sys/fs/cgroup:/sys/fs/cgroup:rw \
+        --tmpfs /run \
+        --entrypoint bash \
+        {{extra_args}} \
+        odem
+
 # Run ansible-lint and yamllint on every odem.* collection.
 # Skips `manage` (Python/tools only) and `examples` (sample inventory, not
 # a collection source). Exits non-zero if any collection fails. Use
