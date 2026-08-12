@@ -163,6 +163,33 @@ install-forced collections_path="../.ansible/ansible_collections":
     done
     echo "Summary: $built built, $installed installed, $failed failed"
 
+# Run a Molecule scenario for a single role. Skips collections without a molecule/ dir.
+molecule role:
+    #!/usr/bin/env bash
+    set -uo pipefail
+    found=0
+    for repo in {{REPOS}}; do
+        if [ "$(basename "$repo")" = "examples" ] || [ "$(basename "$repo")" = "manage" ]; then
+            continue
+        fi
+        # role arg can be `package_manager` or `mps.os.package_manager` (FQN)
+        target_role="{{role}}"
+        if [[ "$target_role" == *.*.* ]]; then
+            target_role="${target_role##*.}"
+        fi
+        scenario_dir="$repo/roles/$target_role/molecule/default"
+        if [ -d "$scenario_dir" ]; then
+            echo "==> $repo/roles/$target_role"
+            cd "$repo/roles/$target_role"
+            molecule test
+            found=$((found + 1))
+        fi
+    done
+    if [ "$found" -eq 0 ]; then
+        echo "No molecule scenario found for role '{{role}}'"
+        exit 1
+    fi
+
 # Run ansible-lint and yamllint on every mps.* collection.
 # Skips `manage` (Python/tools only) and `examples` (sample inventory, not
 # a collection source). Exits non-zero if any collection fails. Use
