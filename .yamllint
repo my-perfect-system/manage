@@ -15,6 +15,8 @@ rules:
   document-start: disable
   empty-lines:
     max: 2
+    max-start: 2
+    max-end: 2
   indentation:
     spaces: 2
     # Allow `default:` then sequence items at parent level — common in

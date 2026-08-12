@@ -1,4 +1,4 @@
-REPOS := "../manage ../mps-base ../mps-os ../mps-users ../mps-optimize ../mps-terminal ../mps-development ../mps-desktop ../mps-hardening ../mps-backup ../examples"
+REPOS := "../manage ../odem-base ../odem-os ../odem-users ../odem-optimize ../odem-terminal ../odem-development ../odem-desktop ../odem-hardening ../odem-backup ../examples"
 
 default: usage
 
@@ -146,7 +146,7 @@ install-forced collections_path="../.ansible/ansible_collections":
             echo
             continue
         fi
-        tarball=$(ls -t "$repo"/mps-*.tar.gz 2>/dev/null | head -1)
+        tarball=$(ls -t "$repo"/odem-*.tar.gz 2>/dev/null | head -1)
         if [ -z "$tarball" ]; then
             echo "  ERROR: no tarball after build"
             failed=$((failed + 1))
@@ -172,7 +172,7 @@ molecule role:
         if [ "$(basename "$repo")" = "examples" ] || [ "$(basename "$repo")" = "manage" ]; then
             continue
         fi
-        # role arg can be `package_manager` or `mps.os.package_manager` (FQN)
+        # role arg can be `package_manager` or `odem.os.package_manager` (FQN)
         target_role="{{role}}"
         if [[ "$target_role" == *.*.* ]]; then
             target_role="${target_role##*.}"
@@ -190,11 +190,11 @@ molecule role:
         exit 1
     fi
 
-# Run ansible-lint and yamllint on every mps.* collection.
+# Run ansible-lint and yamllint on every odem.* collection.
 # Skips `manage` (Python/tools only) and `examples` (sample inventory, not
 # a collection source). Exits non-zero if any collection fails. Use
 # `just install-forced` first so cross-collection dependencies
-# (mps.base.identity, community.crypto, community.general) resolve.
+# (odem.base.identity, community.crypto, community.general) resolve.
 lint:
     #!/usr/bin/env bash
     set -uo pipefail

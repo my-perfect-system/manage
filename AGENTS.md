@@ -1,31 +1,31 @@
 # AGENTS.md — my-perfect-system
 
 This folder hosts the source for every Ansible collection in the
-`mps.*` ecosystem. Each subdirectory is intended to become its own Git
+`odem.*` ecosystem. Each subdirectory is intended to become its own Git
 repository (one per collection) and to be published to Ansible Galaxy
 as the long-term distribution path. Currently the repos are local
-git checkouts, with the old `mps-collections/` repo kept as reference.
+git checkouts, with the old `odem-collections/` repo kept as reference.
 
 ## Repos
 
 | Repo | Galaxy name | Version | Depends on | Purpose |
 |---|---|---|---|---|
-| `mps-base/` | `mps.base` | 0.1.0 | — | Anchor collection. Holds the shared `mps.base.identity` role and the documentation of the cross-collection conventions. All leaves depend on it. |
-| `mps-os/` | `mps.os` | 0.3.0 | mps.base, ansible.posix | Operating system init — package sources, unattended-upgrades, locale/keyboard/timezone, core CLI tooling. Platform-agnostic naming; content is still Debian 13 (trixie) focused. |
-| `mps-users/` | `mps.users` | 0.3.0 | mps.base, ansible.posix | User accounts, groups, SSH keys, sudoers. Per-user data model (catalog + list) lives in `mps.base.identity`. |
-| `mps-optimize/` | `mps.optimize` | 0.3.0 | mps.base, ansible.posix | System-level performance tuning — zram, tmpfs ramdisks, kmscon userspace console. |
-| `mps-terminal/` | `mps.terminal` | 0.3.0 | mps.base, ansible.posix | Shell and editor environment — bash, vim, nvim, tmux, kitty, fonts, python, rust, scripts, skeletons. Mostly per-user. |
-| `mps-development/` | `mps.development` | 0.3.0 | mps.base, ansible.posix | Per-user development tooling — opencode, java, dotnet, espidf, latex, lmstudio, unity. |
-| `mps-desktop/` | `mps.desktop` | 0.3.0 | mps.base, ansible.posix | Desktop GUI / window manager environment — x11, gnometools, grubmenu, lightdm, plymouth, plus per-user qtile/rofi/thunar/wm/essentials/kanata and system-level firefox/thunderbird/brave/spotify. |
-| `mps-hardening/` | `mps.hardening` | 0.3.0 | mps.base, ansible.posix, community.crypto | System-level hardening — firewall (iptables), apparmor, auditd, AIDE, CIS lockdown (clones `ansible-lockdown/DEBIAN13-CIS`). |
-| `mps-backup/` | `mps.backup` | 0.3.0 | mps.base, ansible.posix | Per-user backup restore — SSH keys, config, brave bookmarks, home directory. |
+| `odem-base/` | `odem.base` | 0.1.0 | — | Anchor collection. Holds the shared `odem.base.identity` role and the documentation of the cross-collection conventions. All leaves depend on it. |
+| `odem-os/` | `odem.os` | 0.3.0 | odem.base, ansible.posix | Operating system init — package sources, unattended-upgrades, locale/keyboard/timezone, core CLI tooling. Platform-agnostic naming; content is still Debian 13 (trixie) focused. |
+| `odem-users/` | `odem.users` | 0.3.0 | odem.base, ansible.posix | User accounts, groups, SSH keys, sudoers. Per-user data model (catalog + list) lives in `odem.base.identity`. |
+| `odem-optimize/` | `odem.optimize` | 0.3.0 | odem.base, ansible.posix | System-level performance tuning — zram, tmpfs ramdisks, kmscon userspace console. |
+| `odem-terminal/` | `odem.terminal` | 0.3.0 | odem.base, ansible.posix | Shell and editor environment — bash, vim, nvim, tmux, kitty, fonts, python, rust, scripts, skeletons. Mostly per-user. |
+| `odem-development/` | `odem.development` | 0.3.0 | odem.base, ansible.posix | Per-user development tooling — opencode, java, dotnet, espidf, latex, lmstudio, unity. |
+| `odem-desktop/` | `odem.desktop` | 0.3.0 | odem.base, ansible.posix | Desktop GUI / window manager environment — x11, gnometools, grubmenu, lightdm, plymouth, plus per-user qtile/rofi/thunar/wm/essentials/kanata and system-level firefox/thunderbird/brave/spotify. |
+| `odem-hardening/` | `odem.hardening` | 0.3.0 | odem.base, ansible.posix, community.crypto | System-level hardening — firewall (iptables), apparmor, auditd, AIDE, CIS lockdown (clones `ansible-lockdown/DEBIAN13-CIS`). |
+| `odem-backup/` | `odem.backup` | 0.3.0 | odem.base, ansible.posix | Per-user backup restore — SSH keys, config, brave bookmarks, home directory. |
 
 `manage/` hosts the cross-repo `Justfile` (status / pull / commit / force-install across all leaf collections — see [Build, install, run](#build-install-run)). `examples/` hosts reference inventory layouts under `examples/inventories/<env>/`.
 
 ## Per-repo layout
 
 ```
-mps-<col>/
+odem-<col>/
 ├── galaxy.yml                  # collection metadata + dependencies
 ├── changelogs/                 # changelog fragments + compiled changelog.yaml
 ├── meta/                       # collection-level runtime.yml
@@ -55,7 +55,7 @@ Every role follows the same flow inside `tasks/main.yml`:
 
 Some roles also include:
 
-- `convert.yml` (e.g. `mps.optimize.ramdisks`) — multi-step inline operations too large for a single task block.
+- `convert.yml` (e.g. `odem.optimize.ramdisks`) — multi-step inline operations too large for a single task block.
 
 ## Task naming convention
 
@@ -78,9 +78,9 @@ Rules:
 
 Do **not** reintroduce the historical `<ROLE_NAME> - <message>` prefix. The first thing a future reader of a play log needs is the action, not the file path.
 
-## `mps.base.identity` — shared identity model
+## `odem.base.identity` — shared identity model
 
-`mps.base.identity` is the **single source of truth** for the per-user identity data model and resolve protocol. Every per-user role declares it as a `meta/main.yml` dependency — there is no per-role `resolve.yml` step.
+`odem.base.identity` is the **single source of truth** for the per-user identity data model and resolve protocol. Every per-user role declares it as a `meta/main.yml` dependency — there is no per-role `resolve.yml` step.
 
 It produces four facts:
 
@@ -104,16 +104,16 @@ when:
 
 ### `users_catalog` and `users_list` — single source of truth
 
-Both inputs to the identity model are declared and defaulted **exactly once** in `mps-base/roles/identity/`:
+Both inputs to the identity model are declared and defaulted **exactly once** in `odem-base/roles/identity/`:
 
-- `mps-base/roles/identity/meta/argument_specs.yml` — canonical spec, including the **full single-entity schema** for a `users_catalog` entry (every supported field: `name`, `uid`, `group`, `groups`, `append_groups`, `comment`, `shell`, `home`, `create_home`, `system`, `expires`, `password`, `ssh_keys`, `authorized_keys`, `sudo`, `user_roles`).
-- `mps-base/roles/identity/defaults/main.yml` — canonical defaults, including sensible per-user field defaults (`user_shell`, `user_create_home`, `user_system`, `user_expires`, `user_groups`, `admin_groups`, `user_append_groups`, `user_password`), two role-set profiles (`user_roles_default`, `user_roles_minimal`), and empty `users_catalog: {}` / `users_list: []` ready to be overridden per host.
+- `odem-base/roles/identity/meta/argument_specs.yml` — canonical spec, including the **full single-entity schema** for a `users_catalog` entry (every supported field: `name`, `uid`, `group`, `groups`, `append_groups`, `comment`, `shell`, `home`, `create_home`, `system`, `expires`, `password`, `ssh_keys`, `authorized_keys`, `sudo`, `user_roles`).
+- `odem-base/roles/identity/defaults/main.yml` — canonical defaults, including sensible per-user field defaults (`user_shell`, `user_create_home`, `user_system`, `user_expires`, `user_groups`, `admin_groups`, `user_append_groups`, `user_password`), two role-set profiles (`user_roles_default`, `user_roles_minimal`), and empty `users_catalog: {}` / `users_list: []` ready to be overridden per host.
 
 Per-user roles **do not** declare `users_catalog` or `users_list` in their own `argument_specs.yml` or `defaults/main.yml` — they flow through the play scope to the identity role via the dependency chain. Re-declaring them would duplicate the schema and risk drift.
 
 ### Identity resolution protocol
 
-The historical per-role `resolve.yml` was removed from every role. The steps now live exclusively in `mps.base.identity`:
+The historical per-role `resolve.yml` was removed from every role. The steps now live exclusively in `odem.base.identity`:
 
 1. **Validate** — assert `item.name in users_catalog` for each present user
 2. **Resolve** — combine catalog entry with id/name/state/user_roles into `identity_users_resolved`
@@ -157,11 +157,11 @@ users_catalog:
       backup_backup: true
 ```
 
-The convention is: `user_roles_default` defines the global default per-user role set in `mps-base/roles/identity/defaults/main.yml`, and per-user catalog entries reference it via `"{{ user_roles_default }}"`. A second preset `user_roles_minimal` is provided for restricted users.
+The convention is: `user_roles_default` defines the global default per-user role set in `odem-base/roles/identity/defaults/main.yml`, and per-user catalog entries reference it via `"{{ user_roles_default }}"`. A second preset `user_roles_minimal` is provided for restricted users.
 
 ## Build, install, run
 
-From the sibling `mps-examples/` directory (currently at `/home/jb/repo/github/mps/mps-examples/`):
+From the sibling `odem-examples/` directory (currently at `/home/jb/repo/github/odem/odem-examples/` (sibling clone)):
 
 ```bash
 make install            # build + install every collection from local sources
@@ -192,14 +192,14 @@ Repositories iterated are listed in the `REPOS` variable at the top of the Justf
 
 ## Publishing path to Galaxy
 
-Currently every collection is built locally and installed into `mps-collections/.ansible/ansible_collections/mps/`. To publish:
+Currently every collection is built locally and installed into `odem-collections/.ansible/ansible_collections/odem/`. To publish:
 
-1. Push each subdirectory of `my-perfect-system/` to GitHub under `my-perfect-system/mps-<col>` (one repo per collection).
+1. Push each subdirectory of `my-perfect-system/` (now renamed to `odem-*`) to GitHub under `odem/odem-<col>` (one repo per collection).
 2. Configure Galaxy import on each repo.
 3. Tag a release (e.g. `0.3.0`) — Galaxy auto-builds the tarball and publishes.
-4. Consumers then run `ansible-galaxy collection install mps.base mps.os mps.users ...` (or use `make install-galaxy` in `mps-examples/`).
+4. Consumers then run `ansible-galaxy collection install odem.base odem.os odem.users ...` (or use `make install-galaxy` in `odem-examples/`).
 
-Until publishing is configured, `make install` in `mps-examples/` does the local build+install chain.
+Until publishing is configured, `make install` in `odem-examples/` does the local build+install chain.
 
 ## Recent refactoring notes
 
@@ -207,22 +207,22 @@ The following cleanup passes have been committed to the local repos:
 
 - **Task name prefix removed** — every `name:` field in `tasks/*.yml` and `handlers/*.yml` across all 9 collections had its `<ROLE> -` prefix stripped (140 files, 429 names). `notify:` references rewired to the new bare names.
 - **Dead options removed** from `argument_specs.yml` + matching defaults:
-  - `mps-desktop/qtile`: `qtile_keepass_bin`, `qtile_keepass_db_path`, `qtile_screenlayout_hive_cmd` (keepass integration dropped; screenlayout cmd unused).
-  - `mps-hardening/aide`: `aide_conf_file` (never referenced).
-  - `mps-hardening/lockdown`: `lockdown_ssh_port`, `lockdown_cis_vars` (ssh_port hardcoded in `hosts.j2`; cis_vars.yml wiring was missing).
-- **`users_catalog` / `users_list` centralised** — removed from every per-user role's `argument_specs.yml`. The canonical home is now `mps-base/roles/identity/meta/argument_specs.yml` (with full single-entity schema) and `mps-base/roles/identity/defaults/main.yml` (with sensible defaults and example shapes).
+  - `odem-desktop/qtile`: `qtile_keepass_bin`, `qtile_keepass_db_path`, `qtile_screenlayout_hive_cmd` (keepass integration dropped; screenlayout cmd unused).
+  - `odem-hardening/aide`: `aide_conf_file` (never referenced).
+  - `odem-hardening/lockdown`: `lockdown_ssh_port`, `lockdown_cis_vars` (ssh_port hardcoded in `hosts.j2`; cis_vars.yml wiring was missing).
+- **`users_catalog` / `users_list` centralised** — removed from every per-user role's `argument_specs.yml`. The canonical home is now `odem-base/roles/identity/meta/argument_specs.yml` (with full single-entity schema) and `odem-base/roles/identity/defaults/main.yml` (with sensible defaults and example shapes).
 - **`changelogs/` folders removed** from all 9 collections — they will be repopulated after the broader refactoring work is complete.
-- **`mps-meta` collection added then removed** — `mps-meta` was initially introduced as composition-only meta roles (`bootstrap`, `terminal_full`/`terminal_minimal`, `desktop_full`/`desktop_minimal`, `workstation_full`/`workstation_minimal`) that bundled leaf roles from the other collections into host classes. Each meta role was `meta/main.yml` listing `dependencies:` plus a no-op `tasks/main.yml`. The whole collection was subsequently deleted and replaced with 7 tier playbooks under `examples/inventories/home/playbooks/` (`bootstrap.yml`, `terminal_minimal.yml`, `terminal_full.yml`, `desktop_minimal.yml`, `desktop_full.yml`, `workstation_minimal.yml`, `workstation_full.yml`) using `import_playbook` chains — one less collection, no `mps.meta.*` namespace pollution, every leaf role visible at the play site.
-- **`manage/Justfile` added** — cross-repo git ops (`git-status`, `git-pull`, `git-commit`), example runner (`run-example`), and force build/install (`install-forced` → `ansible-galaxy collection build --force && install --force` into `../.ansible/ansible_collections/`). Replaces the prior `mps-examples/` Make for local development loops.
+- **`odem-meta` collection added then removed** — `odem-meta` was initially introduced as composition-only meta roles (`bootstrap`, `terminal_full`/`terminal_minimal`, `desktop_full`/`desktop_minimal`, `workstation_full`/`workstation_minimal`) that bundled leaf roles from the other collections into host classes. Each meta role was `meta/main.yml` listing `dependencies:` plus a no-op `tasks/main.yml`. The whole collection was subsequently deleted and replaced with 7 tier playbooks under `examples/inventories/home/playbooks/` (`bootstrap.yml`, `terminal_minimal.yml`, `terminal_full.yml`, `desktop_minimal.yml`, `desktop_full.yml`, `workstation_minimal.yml`, `workstation_full.yml`) using `import_playbook` chains — one less collection, no `odem.meta.*` namespace pollution, every leaf role visible at the play site.
+- **`manage/Justfile` added** — cross-repo git ops (`git-status`, `git-pull`, `git-commit`), example runner (`run-example`), and force build/install (`install-forced` → `ansible-galaxy collection build --force && install --force` into `../.ansible/ansible_collections/`). Replaces the prior `odem-examples/` Make for local development loops.
 - **Feature toggles hoisted to top of `defaults/main.yml`** — every role defaults file with `<rolename>_enable_*` toggles was restructured to put the toggles in a top section under `# Feature toggles — naming pattern: <rolename>_enable_<feature>`, followed by a `# Regular configuration` section. 13 of 49 role defaults files were affected (the rest have no toggles yet). Toggle grouping is now visually consistent across roles.
-- **`examples/inventories/home/` reorganised** — `host_vars/testvm.yml` holds the host-specific `ansible_host`; `group_vars/all.yml` holds `ansible_user: deploy` (shared by every host); `group_vars/all/mps_*.yml` are commented-out reference dumps of every collection's role defaults, so users can see what they have available to override.
+- **`examples/inventories/home/` reorganised** — `host_vars/testvm.yml` holds the host-specific `ansible_host`; `group_vars/all.yml` holds `ansible_user: deploy` (shared by every host); `group_vars/all/odem_*.yml` are commented-out reference dumps of every collection's role defaults, so users can see what they have available to override.
 
 ## Deferred (regenerate in dedicated sessions)
 
 - Per-role / per-collection **README.md** files
 - **AGENTS.md** files inside individual collection subdirectories
 - **Molecule** tests for every role
-- **Lint configs** (`.ansible-lint`, `.yamllint`) — currently absent in new repos; old `mps-collections/` keeps them as reference
-- `mps-collections/AGENTS.md` and `mps-examples/AGENTS.md` updates reflecting the new repo split
+- **Lint configs** (`.ansible-lint`, `.yamllint`) — currently absent in new repos; old `odem-collections/` keeps them as reference
+- `odem-collections/AGENTS.md` and `odem-examples/AGENTS.md` updates reflecting the new repo split
 - Cross-collection tier model (base / common / optional) — currently each leaf carries its own 3-tier playbook structure; future design may consolidate
 - New changelog fragments (will be added once the refactor work is wrapped up)

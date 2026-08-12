@@ -1,6 +1,6 @@
 # `manage` repository
 
-Cross-repo orchestration for the `mps.*` Ansible collection ecosystem.
+Cross-repo orchestration for the `odem.*` Ansible collection ecosystem.
 Holds the Justfile that drives `git-status`, `git-pull`, `git-commit`,
 `run-example`, `install-forced`, `lint`, and `molecule` across every
 collection, plus the canonical cross-collection documentation.
@@ -35,7 +35,7 @@ just git-commit 'msg'     # git add -A && commit -m 'msg' && push, every dirty r
 # Apply a playbook against an example inventory
 just run-example home local bootstrap.yml
 
-# Build + install every mps.* collection into ../.ansible/ansible_collections/
+# Build + install every odem.* collection into ../.ansible/ansible_collections/
 just install-forced
 ```
 
@@ -49,7 +49,7 @@ This is the **canonical source of truth** for cross-collection conventions. See 
 - Task naming (bare action phrases — no `<ROLE> -` prefix)
 - Toggle variable pattern (`<role>_enable_<component>: bool`)
 - Per-user opt-in via `user_roles.<key>: true` in `users_catalog`
-- Identity model (single source of truth in `mps.base.identity`)
+- Identity model (single source of truth in `odem.base.identity`)
 
 Any change that touches multiple collections belongs here first.
 

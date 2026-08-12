@@ -27,9 +27,9 @@ skip_list:
   - schema[no-runtime]     # same
   - schema[role-arg-spec]  # intentional schema deviations in identity/users_catalog and elsewhere
   - galaxy[no-changelog]   # we maintain changelog fragments ad-hoc at release time (see AGENTS.md "Recent refactoring notes")
-  - galaxy[tags]           # galaxy_info tags include `mps`, `mps-base` etc. which aren't in the upstream allowed list
-  - meta-no-tags           # same — we use `mps-base`, `mps-debian` etc. as meta tags
-  - var-naming[no-role-prefix]   # we use the bare `mps_filter_users`, `package_*` etc. patterns; role-prefix is not our convention
+  - galaxy[tags]           # galaxy_info tags include `mps`, `odem-base` etc. which aren't in the upstream allowed list
+  - meta-no-tags           # same — we use `odem-base`, `odem-debian` etc. as meta tags
+  - var-naming[no-role-prefix]   # we use the bare `odem_filter_users`, `package_*` etc. patterns; role-prefix is not our convention
   - fqcn[action-core]      # we use fully-qualified `ansible.builtin.*` collections; bare module names trip false positives in tasks with dynamic params
   # NOTE: syntax-check role-dep resolution requires `ansible-galaxy collection install`
   # to be run first. Out-of-the-box (no install), ansible-lint prints warnings
