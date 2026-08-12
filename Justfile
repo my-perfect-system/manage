@@ -163,3 +163,49 @@ install-forced collections_path="../.ansible/ansible_collections":
     done
     echo "Summary: $built built, $installed installed, $failed failed"
 
+# Run ansible-lint and yamllint on every mps.* collection.
+# Skips `manage` (Python/tools only) and `examples` (sample inventory, not
+# a collection source). Exits non-zero if any collection fails. Use
+# `just install-forced` first so cross-collection dependencies
+# (mps.base.identity, community.crypto, community.general) resolve.
+lint:
+    #!/usr/bin/env bash
+    set -uo pipefail
+    passed=0
+    failed=0
+    skipped=0
+    for repo in {{REPOS}}; do
+        name=$(basename "$repo")
+        case "$name" in
+            manage|examples) skipped=$((skipped + 1)); continue ;;
+        esac
+        if [ ! -f "$repo/.ansible-lint" ] || [ ! -f "$repo/.yamllint" ]; then
+            echo "==> $name: SKIP (no lint configs found — run propagate_lint_configs.py)"
+            skipped=$((skipped + 1))
+            continue
+        fi
+        echo "==> $name"
+        cd "$repo"
+        yamllint_out=$(yamllint -c .yamllint . 2>&1)
+        yamllint_status=$?
+        ansible_lint_out=$(ansible-lint --offline 2>&1)
+        ansible_lint_status=$?
+        if [ "$yamllint_status" -eq 0 ] && [ "$ansible_lint_status" -eq 0 ]; then
+            echo "  PASS"
+            passed=$((passed + 1))
+        else
+            echo "  FAIL (yamllint exit=$yamllint_status, ansible-lint exit=$ansible_lint_status)"
+            if [ "$yamllint_status" -ne 0 ]; then
+                echo "$yamllint_out" | sed 's/^/    yamllint:    /' | head -10
+            fi
+            if [ "$ansible_lint_status" -ne 0 ]; then
+                echo "$ansible_lint_out" | sed 's/^/    ansible-lint: /' | head -10
+            fi
+            failed=$((failed + 1))
+        fi
+        cd - > /dev/null
+    done
+    echo
+    echo "Summary: $passed passed, $failed failed, $skipped skipped"
+    [ "$failed" -eq 0 ]
+
