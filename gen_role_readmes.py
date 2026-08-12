@@ -82,7 +82,9 @@ def render_role_yml(coll_name, role):
                 meta = yaml.safe_load(f) or {}
             gi = meta.get("galaxy_info") or {}
             min_ansible = gi.get("min_ansible_version", "")
-            license_str = ", ".join(gi.get("license") or [])
+            license_str = gi.get("license") or []
+            if isinstance(license_str, list):
+                license_str = ", ".join(license_str)
             platforms = gi.get("platforms") or []
             deps = meta.get("dependencies") or []
         except Exception:
@@ -192,6 +194,16 @@ def render_role_yml(coll_name, role):
         )
         lines.append(f"- **Platforms**: {plat_str}")
     lines.append(f"- **Tasks file lines**: {task_lines}")
+    lines.append("")
+    lines.append("## Related files")
+    lines.append("")
+    lines.append("- [`meta/main.yml`](meta/main.yml) — galaxy_info + role dependencies")
+    lines.append(
+        "- [`meta/argument_specs.yml`](meta/argument_specs.yml) — variable spec (the source of the variable table above)"
+    )
+    lines.append(
+        "- [`defaults/main.yml`](defaults/main.yml) — variable defaults (the source of the default values above)"
+    )
     lines.append("")
 
     return "\n".join(lines)
