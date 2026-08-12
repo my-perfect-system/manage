@@ -1,4 +1,4 @@
-REPOS := ". ../mps-base ../mps-meta ../mps-os ../mps-users ../mps-optimize ../mps-terminal ../mps-development ../mps-desktop ../mps-hardening ../mps-backup ../examples"
+REPOS := "../manage ../mps-base ../mps-meta ../mps-os ../mps-users ../mps-optimize ../mps-terminal ../mps-development ../mps-desktop ../mps-hardening ../mps-backup ../examples"
 
 default: usage
 
@@ -132,6 +132,9 @@ install-forced collections_path="../.ansible/ansible_collections":
     failed=0
     for repo in {{REPOS}}; do
         if [ "$(basename "$repo")" = "examples" ]; then
+            continue
+        fi
+        if [ "$(basename "$repo")" = "manage" ]; then
             continue
         fi
         echo "==> $repo"
