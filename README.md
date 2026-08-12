@@ -2,8 +2,8 @@
 
 Cross-repo orchestration for the `mps.*` Ansible collection ecosystem.
 Holds the Justfile that drives `git-status`, `git-pull`, `git-commit`,
-`run-example`, `install-forced`, and `lint` across every collection,
-plus documentation and per-collection doc-generation scripts.
+`run-example`, `install-forced`, `lint`, and `molecule` across every
+collection, plus the canonical cross-collection documentation.
 
 ## Galaxy
 
@@ -13,10 +13,9 @@ This is not an Ansible collection — it's a tool / docs repo.
 
 ```
 manage/
-├── AGENTS.md                                # cross-collection conventions + per-collection overview table
-├── Justfile                                 # cross-repo targets (see below)
-├── .ansible-lint / .yamllint                # local lint configs (the canonical source for propagation)
-└── *.py                                     # Python helpers — see table below
+├── AGENTS.md            # cross-collection conventions + per-collection overview table
+├── Justfile             # cross-repo targets (see below)
+└── .ansible-lint / .yamllint   # local lint configs
 ```
 
 ## Quick start
@@ -41,20 +40,6 @@ just install-forced
 ```
 
 See [`Justfile`](Justfile) for the full target list.
-
-## Cross-repo scripts
-
-Three Python scripts live here. Each is idempotent and re-runnable:
-
-| Script | Purpose |
-|---|---|
-| `propagate_lint_configs.py` | Copies `mps-base/.ansible-lint` + `mps-base/.yamllint` into every collection's root, registers them in `galaxy.yml build_ignore`, and fixes missing trailing newlines. |
-| `gen_molecule_scenarios.py` | Writes a 4-file Molecule scenario (`molecule.yml` + `converge.yml` + `verify.yml` + `requirements.yml`) into every role under every collection. |
-| `gen_changelog_fragments.py` | Writes `changelogs/changelog.yaml` + per-change fragments under `changelogs/fragments/*.yml` into every collection. |
-
-Each is referenced from the modified file's commit message; rerunning
-after editing the canonical source in `mps-base` keeps every consumer
-in sync.
 
 ## Conventions
 

@@ -207,7 +207,7 @@ lint:
             manage|examples) skipped=$((skipped + 1)); continue ;;
         esac
         if [ ! -f "$repo/.ansible-lint" ] || [ ! -f "$repo/.yamllint" ]; then
-            echo "==> $name: SKIP (no lint configs found — run propagate_lint_configs.py)"
+            echo "==> $name: SKIP (no lint configs found)"
             skipped=$((skipped + 1))
             continue
         fi
