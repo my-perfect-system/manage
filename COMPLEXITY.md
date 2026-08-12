@@ -150,10 +150,10 @@ changed since the last review.
 |---|---|---|---|
 | Stub + indirection collapse (high-leverage) | **3** | 0 | 3 |
 | Medium-leverage (logic simplification)       | **4** | 0 | 4 |
-| High-touch (architecture)                    | 0 | 3 | 3 |
-| Cross-cutting                                | 0 | 1 | 1 |
+| High-touch (architecture)                    | **3** | 0 | 3 |
+| Cross-cutting                                | **1** | 0 | 1 |
 | Deferred (out of scope here)                 | 0 | 6 | 6 |
-| **Total**                                    | **7** | **10** | **17** |
+| **Total**                                    | **11** | **6** | **17** |
 
 ## Detailed checklist
 
@@ -202,25 +202,46 @@ changed since the last review.
 
 ### High-touch (architecture, needs design decision)
 
-- [ ] **mps-base/identity** — complexity is intrinsic (canonical home for the
-      data model), but moving Jinja data shaping into a custom **filter
-      plugin** would reduce `tasks/main.yml` from ~120 lines to ~10.
-- [ ] **mps-hardening/firewall + lockdown** — both domain specialists with
-      template-internal complexity. Worth questioning whether they belong
-      in `mps-hardening` as is, or whether firewall gets its own collection.
-- [ ] **mps-terminal/nvim + mps-terminal/fonts** — task graphs are sprawling
-      (5+ dependencies per tool). Could be flattened by accepting that
-      "toolkit install" roles are naturally complex, or split into
-      `nvim-core` + `nvim-extras`.
+- [x] **mps-base/identity** — moved the heavy Jinja data-shaping into
+      the `mps.base.identity` filter plugin surface. Two new filters
+      added: `mps_resolve_users(users_list, users_catalog)` (produces
+      `identity_users_resolved`) and `mps_user_groups(users)` (produces
+      `identity_user_groups`). `tasks/main.yml` shrank from 70 to 51
+      lines and is now pure orchestration. Filters are unit-testable
+      from plain Python.
+- [x] **mps-hardening/firewall + lockdown** — **OBSOLETE / accepted**.
+      Both roles are domain specialists with template-internal
+      complexity (firewall: iptables rules.v4.j2 with for-loops;
+      lockdown: external CIS playbook invocation). The complexity is
+      load-bearing — refactoring would mean rewriting iptables / CIS
+      orchestration from scratch for marginal gain. **Decision: keep
+      both as-is.**
+- [x] **mps-terminal/nvim + mps-terminal/fonts** — **OBSOLETE /
+      accepted**. nvim has a sprawling task graph (apt + npm + tarball
+      + per-user venv + pip + cargo + yazi). fonts has a tight
+      get_url → unarchive → copy → cleanup loop. Both are toolkit
+      install roles where the apparent complexity IS the product.
+      Splitting into `nvim-core` + `nvim-extras` would add indirection
+      without reducing real LoC. **Decision: keep both as-is.**
 
-### Cross-cutting question
+### Cross-cutting
 
-- [ ] **Bucket-D multi-phase roles** (qtile, essentials, rofi, thunar, wm,
-      bash, python, rust, nvim, system_settings, system_tools,
-      package_manager, all 4 mps-users roles) still keep the
-      install/facts/configure sub-step structure. Now that `mps-meta` is
-      gone, the multi-file sub-step pattern is the last remaining
-      indirection. Each role's review is per-role, not mechanical.
+- [x] **Bucket-D multi-phase roles** — reviewed per-role:
+  - **Flattened** (4): `mps-terminal/{bash,python,rust,nvim}` were
+    pure install+configure shims; inlined into main.yml. nvim also
+    absorbed `tools.yml`. Per-user loops switched to the
+    `mps_filter_users` filter plugin.
+  - **Kept multi-file** (12): `mps-desktop/{essentials,qtile,rofi,
+    thunar,wm}` keep their `facts.yml` set_fact phase; `mps-os/
+    {package_manager,system_settings,system_tools}` keep their
+    sub-area organization (locale/keyboard/console/time; 7 tool
+    buckets; configure/install/upgrades); `mps-users/
+    {groups,ssh,sudo,users}` keep distinct add/del/facts operations.
+  - **Extracted** the byte-identical `Assert Debian 13 target`
+    block from **7 role main.ymls** into a new shared role
+    `mps.base.assert_debian13`. All 7 roles now declare it in their
+    `meta/main.yml` `dependencies:` block. Single source of truth;
+    behavior identical (assert runs before each role's own tasks).
 
 ### Deferred (out of scope here — regenerate in dedicated sessions)
 
