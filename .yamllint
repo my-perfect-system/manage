@@ -1,0 +1,39 @@
+---
+# yamllint config for the mps.* collections.
+# Docs: https://yamllint.readthedocs.io/
+
+extends: default
+
+rules:
+  # Ansible-lint requires these defaults to comply with its embedded yamllint:
+  braces:
+    max-spaces-inside: 1
+  comments:
+    require-starting-space: true
+    min-spaces-from-content: 1
+  comments-indentation: false
+  document-start: disable
+  empty-lines:
+    max: 2
+  indentation:
+    spaces: 2
+    # Allow `default:` then sequence items at parent level — common in
+    # Ansible argument_specs.yml, fixed in newer roles but historic
+    # files vary.
+    indent-sequences: consistent
+    check-multi-line-strings: false
+  # Ansible YAML easily exceeds 80 columns (long Jinja strings, nested dicts).
+  line-length:
+    max: 160
+    level: warning
+  octal-values:
+    forbid-explicit-octal: true
+    forbid-implicit-octal: true
+  quoted-strings: disable
+  # Trailing whitespace inside strings is allowed; trailing whitespace
+  # at end-of-line is also tolerated as a warning, since some Jinja
+  # blocks pad with spaces.
+  trailing-spaces: disable
+  # Ansible frequently uses 'yes'/'no' for booleans.
+  truthy:
+    level: warning

@@ -1,0 +1,43 @@
+---
+# ansible-lint config for the mps.* collections.
+# Docs: https://ansible.readthedocs.io/projects/lint/configuring/
+
+profile: min
+
+# Run fully offline; galaxy install / network fetches are not allowed in CI.
+offline: true
+
+exclude_paths:
+  - .git/
+  - .github/
+  - .ansible/
+  - "*.tar.gz"
+  - changelogs/
+  - tests/output/
+  # meta/main.yml only holds galaxy_info + dependencies; ansible-lint's
+  # syntax-check rule requires the dependency collections to be installed,
+  # which isn't always true in dev environments. The dependencies are
+  # covered at apply-time by the ansible-playbook invocation.
+  - "**/meta/main.yml"
+
+# Rules we deliberately skip — with rationale.
+skip_list:
+  - role-name              # mps.* role names are intentionally namespaced (`mps.<col>.<role>`); this rule expects `role_name`
+  - schema[meta]           # argument_specs.yml uses intentionally loose schema (`type: raw`, `type: list` with custom elements)
+  - schema[no-runtime]     # same
+  - schema[role-arg-spec]  # intentional schema deviations in identity/users_catalog and elsewhere
+  - galaxy[no-changelog]   # we maintain changelog fragments ad-hoc at release time (see AGENTS.md "Recent refactoring notes")
+  - galaxy[tags]           # galaxy_info tags include `mps`, `mps-base` etc. which aren't in the upstream allowed list
+  - meta-no-tags           # same — we use `mps-base`, `mps-debian` etc. as meta tags
+  - var-naming[no-role-prefix]   # we use the bare `mps_filter_users`, `package_*` etc. patterns; role-prefix is not our convention
+  - fqcn[action-core]      # we use fully-qualified `ansible.builtin.*` collections; bare module names trip false positives in tasks with dynamic params
+  # NOTE: syntax-check role-dep resolution requires `ansible-galaxy collection install`
+  # to be run first. Out-of-the-box (no install), ansible-lint prints warnings
+  # about missing cross-collection deps but still exits 0.
+
+# Optional: enforce collection name in role FQCNs.
+# unset → use whatever Ansible Lint decides.
+
+# Use sane verbosity when running locally.
+quiet: false
+verbosity: 0

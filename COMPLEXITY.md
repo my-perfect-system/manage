@@ -152,8 +152,8 @@ changed since the last review.
 | Medium-leverage (logic simplification)       | **4** | 0 | 4 |
 | High-touch (architecture)                    | **3** | 0 | 3 |
 | Cross-cutting                                | **1** | 0 | 1 |
-| Deferred (out of scope here)                 | **3** | 4 | 7 |
-| **Total**                                    | **14** | **4** | **18** |
+| Deferred (out of scope here)                 | **4** | 3 | 7 |
+| **Total**                                    | **15** | **3** | **18** |
 
 ## Detailed checklist
 
@@ -254,6 +254,16 @@ changed since the last review.
 - [x] **AGENTS.md** files inside individual collection subdirectories
       — 9 files written.
 - [ ] **Molecule** tests for every role
-- [ ] **Lint configs** (`.ansible-lint`, `.yamllint`) — currently absent in new repos; old `mps-collections/` keeps them as reference
+- [x] **Lint configs** (`.ansible-lint`, `.yamllint`) — added to all 9
+      collections + `manage/`. Canonical configs live in
+      `mps-base/.ansible-lint` and `mps-base/.yamllint`; propagated by
+      `manage/propagate_lint_configs.py`. Each collection's
+      `galaxy.yml` `build_ignore` now excludes both files so they don't
+      end up in published tarballs.
+      Verified: `ansible-lint --offline` and `yamllint -c .yamllint .`
+      both exit 0 on every collection (with
+      `community.crypto` + `community.general` installed locally).
+      Two line-length warnings remain in `mps-desktop/{qtile,kanata}`
+      and are intentional warnings rather than failures.
 - [ ] `mps-collections/AGENTS.md` and `mps-examples/AGENTS.md` updates reflecting the new repo split
 - [ ] New changelog fragments (will be added once the refactor work is wrapped up)
