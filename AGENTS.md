@@ -19,6 +19,7 @@ git checkouts, with the old `odem-collections/` repo kept as reference.
 | `odem-desktop/` | `odem.desktop` | 0.3.0 | odem.base, ansible.posix | Desktop GUI / window manager environment — x11, gnometools, grubmenu, lightdm, plymouth, plus per-user qtile/rofi/thunar/wm/essentials/kanata and system-level firefox/thunderbird/brave/spotify. |
 | `odem-hardening/` | `odem.hardening` | 0.3.0 | odem.base, ansible.posix, community.crypto | System-level hardening — firewall (iptables), apparmor, auditd, AIDE, CIS lockdown (clones `ansible-lockdown/DEBIAN13-CIS`). |
 | `odem-backup/` | `odem.backup` | 0.3.0 | odem.base, ansible.posix | Per-user backup restore — SSH keys, config, brave bookmarks, home directory. |
+| `odem-services/` | `odem.services` | 0.3.2 | odem.base, ansible.posix | Service deployment and configuration — OpenVPN server config from the `mps-openvpn` repo. First role pending. |
 
 `manage/` hosts the cross-repo `Justfile` (status / pull / commit / force-install across all leaf collections — see [Build, install, run](#build-install-run)). `examples/` hosts reference inventory layouts under `examples/inventories/<env>/`.
 
@@ -175,7 +176,7 @@ make clean              # remove tarballs + installed collections
 
 ### Cross-repo `Justfile` (`manage/Justfile`)
 
-Targets that span all 9 leaf + meta collections — run from `manage/` (path-relative to the sibling collections):
+Targets that span all 10 leaf + meta collections — run from `manage/` (path-relative to the sibling collections):
 
 ```bash
 just                          # default → usage (just --list)
