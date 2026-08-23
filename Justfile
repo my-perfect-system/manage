@@ -1,4 +1,4 @@
-REPOS := "../manage ../odem-base ../odem-os ../odem-users ../odem-optimize ../odem-terminal ../odem-development ../odem-desktop ../odem-hardening ../odem-backup ../odem-services ../examples"
+REPOS := "../manage ../odem-base ../odem-os ../odem-users ../odem-optimize ../odem-terminal ../odem-development ../odem-desktop ../odem-hardening ../odem-backup ../odem-services ../odem-alloy ../examples"
 
 default: usage
 
