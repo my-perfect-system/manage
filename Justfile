@@ -1,4 +1,5 @@
 REPOS := "../manage ../odem-base ../odem-os ../odem-users ../odem-optimize ../odem-terminal ../odem-development ../odem-desktop ../odem-hardening ../odem-backup ../odem-services ../odem-alloy ../examples"
+EXAMPLEDIR := "examples-server"
 
 default: usage
 
@@ -117,7 +118,7 @@ run-example name inventory playbook:
     #!/usr/bin/env bash
     set -uo pipefail
     export ANSIBLE_NOCOWS=1
-    cd ../examples/inventories/{{name}} \
+    cd ../{{EXAMPLEDIR}}/inventories/{{name}} \
         && ansible-playbook \
             -i inventory_{{inventory}}.ini \
             playbooks/{{playbook}}.yml
