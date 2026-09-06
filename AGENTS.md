@@ -123,6 +123,10 @@ The historical per-role `resolve.yml` was removed from every role. The steps now
 
 Per-user roles no longer need a resolve step. The `<role>_users_present` / `<role>_users_absent` variables that used to be set per-role are gone — `identity_users_resolved` is filtered inline per role.
 
+### Shared group folders
+
+`odem.base.identity` also creates collaborative group folders (its `tasks/` split into `resolve.yml` + `folders.yml`). Configurable via `identity_group_folders` (list of dicts: `path` + `group` + optional `mode`), gated by `identity_enable_group_folders` (default `true`, empty list = no-op). Each folder is root-owned with the entry's group and the setgid bit (`identity_group_folders_mode`, default `2770`) so new subfolders inherit the group; referenced groups are ensured present.
+
 ## Toggle variable pattern
 
 Every yes/no subcomponent toggle is named `<role>_enable_<component>: bool`. Lists and config values keep their existing names; their execution is gated by the corresponding `enable_*` toggle.
