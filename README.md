@@ -21,6 +21,11 @@ manage/
 ## Quick start
 
 ```bash
+# Fresh install: clone this manage repo, then fetch every missing sibling repo
+git clone git@github.com:my-perfect-system/manage.git
+cd manage
+just git-clone          # clones every missing sibling repo (skips existing ones)
+
 # Show all targets
 just --list
 
