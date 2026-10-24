@@ -186,6 +186,8 @@ Targets that span all 10 leaf + meta collections — run from `manage/` (path-re
 just                          # default → usage (just --list)
 just list-collections [inv]   # list installed collections in examples/inventories/<inv>
 just list-roles               # list every role in every collection with its description
+just git-clone                # clone every missing sibling repo from GitHub (fresh install)
+just git-clone                # clone every missing sibling repo from GitHub (fresh install)
 just git-status               # git status -sb per collection, plus latest commit
 just git-pull                 # git pull --ff-only per repo; skip dirty
 just git-commit 'msg'         # git add -A && commit -m 'msg' && push, every dirty repo

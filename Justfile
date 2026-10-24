@@ -43,6 +43,38 @@ list-roles:
         echo
     done
 
+# Clone every missing sibling repo from GitHub (fresh-install helper).
+# Existing git repos are skipped; a non-git directory at a target path is an error.
+git-clone:
+    #!/usr/bin/env bash
+    set -uo pipefail
+    base="git@github.com:my-perfect-system"
+    cloned=0
+    present=0
+    failed=0
+    for repo in {{REPOS}}; do
+        name=$(basename "$repo")
+        if [ "$name" = "manage" ]; then
+            continue
+        fi
+        echo "==> $name"
+        if [ -d "$repo/.git" ]; then
+            echo "  present"
+            present=$((present + 1))
+        elif [ -e "$repo" ]; then
+            echo "  ERROR: path exists but is not a git repo"
+            failed=$((failed + 1))
+        elif GIT_TERMINAL_PROMPT=0 git clone "$base/$name.git" "$repo"; then
+            cloned=$((cloned + 1))
+        else
+            echo "  ERROR: clone failed"
+            failed=$((failed + 1))
+        fi
+        echo
+    done
+    echo "Summary: $cloned cloned, $present present, $failed failed"
+    [ "$failed" -eq 0 ]
+
 # Show git status of every collection repo
 git-status:
     #!/usr/bin/env bash
