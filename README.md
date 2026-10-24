@@ -29,6 +29,9 @@ just git-clone          # clones every missing sibling repo (skips existing ones
 # Show all targets
 just --list
 
+# Build + install every odem.* collection into ../.ansible/ansible_collections/
+just install-forced
+
 # Lint everything
 just lint
 
@@ -40,8 +43,6 @@ just git-commit 'msg'     # git add -A && commit -m 'msg' && push, every dirty r
 # Apply a playbook against an example inventory
 just run-example home local bootstrap.yml
 
-# Build + install every odem.* collection into ../.ansible/ansible_collections/
-just install-forced
 ```
 
 See [`Justfile`](Justfile) for the full target list.
