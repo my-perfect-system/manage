@@ -17,7 +17,7 @@ git checkouts, with the old `odem-collections/` repo kept as reference.
 | `odem-terminal/` | `odem.terminal` | 0.3.0 | odem.base, ansible.posix | Shell and editor environment — bash, vim, nvim, tmux, kitty, fonts, python, rust, scripts, skeletons. Mostly per-user. |
 | `odem-development/` | `odem.development` | 0.3.0 | odem.base, ansible.posix | Per-user development tooling — opencode, java, dotnet, espidf, latex, lmstudio, unity. |
 | `odem-desktop/` | `odem.desktop` | 0.3.0 | odem.base, ansible.posix | Desktop GUI / window manager environment — x11, gnometools, grubmenu, lightdm, plymouth, plus per-user qtile/rofi/thunar/wm/essentials/kanata and system-level firefox/thunderbird/brave/spotify. |
-| `odem-hardening/` | `odem.hardening` | 0.3.0 | odem.base, ansible.posix, community.crypto | System-level hardening — firewall (iptables), apparmor, auditd, AIDE, CIS lockdown (clones `ansible-lockdown/DEBIAN13-CIS`). |
+| `odem-hardening/` | `odem.hardening` | 0.4.0 | odem.base, ansible.posix, community.crypto | System-level hardening — firewall (iptables), apparmor, auditd, AIDE, fail2ban, Wazuh agent, CIS lockdown (clones `ansible-lockdown/DEBIAN13-CIS`). |
 | `odem-backup/` | `odem.backup` | 0.3.0 | odem.base, ansible.posix | Per-user backup restore — SSH keys, config, brave bookmarks, home directory. |
 | `odem-services/` | `odem.services` | 0.3.2 | odem.base, ansible.posix | Service deployment and configuration — OpenVPN server config from the `mps-openvpn` repo. First role pending. |
 

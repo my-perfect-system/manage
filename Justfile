@@ -1,6 +1,6 @@
 REPOS := "../manage ../odem-base ../odem-os ../odem-users ../odem-optimize ../odem-terminal ../odem-development ../odem-desktop ../odem-hardening ../odem-backup ../odem-services ../odem-alloy ../examples"
-EXAMPLEDIR := "examples-server"
-# EXAMPLEDIR := "examples"
+#EXAMPLEDIR := "examples-server"
+EXAMPLEDIR := "examples"
 
 default: usage
 
