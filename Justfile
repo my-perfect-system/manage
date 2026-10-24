@@ -48,7 +48,7 @@ list-roles:
 git-clone:
     #!/usr/bin/env bash
     set -uo pipefail
-    base="git@github.com:my-perfect-system"
+    base="https://github.com/my-perfect-system"
     cloned=0
     present=0
     failed=0
