@@ -147,14 +147,15 @@ git-commit msg:
     echo "Summary: $committed committed+pushed, $skipped clean, $failed failed"
 
 # Show git status of every collection repo
-run-example name inventory playbook:
+run-example name inventory playbook *extra_args:
     #!/usr/bin/env bash
     set -uo pipefail
     export ANSIBLE_NOCOWS=1
     cd ../{{EXAMPLEDIR}}/inventories/{{name}} \
         && ansible-playbook \
             -i inventory_{{inventory}}.ini \
-            playbooks/{{playbook}}.yml
+            playbooks/{{playbook}}.yml \
+            {{extra_args}}
 
 # Force build every collection tarball and force-install to the local collections path
 install-forced collections_path="../.ansible/ansible_collections":
