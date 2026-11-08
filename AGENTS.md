@@ -10,16 +10,19 @@ git checkouts, with the old `odem-collections/` repo kept as reference.
 
 | Repo | Galaxy name | Version | Depends on | Purpose |
 |---|---|---|---|---|
-| `odem-base/` | `odem.base` | 0.1.0 | — | Anchor collection. Holds the shared `odem.base.identity` role and the documentation of the cross-collection conventions. All leaves depend on it. |
-| `odem-os/` | `odem.os` | 0.3.0 | odem.base, ansible.posix | Operating system init — package sources, unattended-upgrades, locale/keyboard/timezone, core CLI tooling. Platform-agnostic naming; content is still Debian 13 (trixie) focused. |
-| `odem-users/` | `odem.users` | 0.3.0 | odem.base, ansible.posix | User accounts, groups, SSH keys, sudoers. Per-user data model (catalog + list) lives in `odem.base.identity`. |
-| `odem-optimize/` | `odem.optimize` | 0.3.0 | odem.base, ansible.posix | System-level performance tuning — zram, tmpfs ramdisks, kmscon userspace console. |
-| `odem-terminal/` | `odem.terminal` | 0.3.0 | odem.base, ansible.posix | Shell and editor environment — bash, vim, nvim, tmux, kitty, fonts, python, rust, scripts, skeletons. Mostly per-user. |
-| `odem-development/` | `odem.development` | 0.3.0 | odem.base, ansible.posix | Per-user development tooling — opencode, java, dotnet, espidf, latex, lmstudio, unity. |
-| `odem-desktop/` | `odem.desktop` | 0.3.0 | odem.base, ansible.posix | Desktop GUI / window manager environment — x11, gnometools, grubmenu, lightdm, plymouth, plus per-user qtile/rofi/thunar/wm/essentials/kanata and system-level firefox/thunderbird/brave/spotify. |
+| `odem-base/` | `odem.base` | 0.3.2 | — | Anchor collection. Holds the shared `odem.base.identity` role and the documentation of the cross-collection conventions. All leaves depend on it. |
+| `odem-os/` | `odem.os` | 0.3.2 | odem.base, ansible.posix | Operating system init — package sources, unattended-upgrades, locale/keyboard/timezone, core CLI tooling. Platform-agnostic naming; content covers Debian 13 (trixie) and Fedora 45 (RedHat family). |
+| `odem-users/` | `odem.users` | 0.3.2 | odem.base, ansible.posix | User accounts, groups, SSH keys, sudoers. Per-user data model (catalog + list) lives in `odem.base.identity`. Debian 13 + Fedora 45. |
+| `odem-optimize/` | `odem.optimize` | 0.3.2 | odem.base, ansible.posix | System-level performance tuning — zram, tmpfs ramdisks, kmscon userspace console. |
+| `odem-terminal/` | `odem.terminal` | 0.3.2 | odem.base, ansible.posix | Shell and editor environment — bash, vim, nvim, tmux, kitty, fonts, python, rust, scripts, skeletons. Mostly per-user. Debian 13 + Fedora 45. |
+| `odem-development/` | `odem.development` | 0.3.2 | odem.base, ansible.posix | Per-user development tooling — opencode, java, dotnet, espidf, latex, lmstudio, unity. |
+| `odem-desktop/` | `odem.desktop` | 0.3.2 | odem.base, ansible.posix | Desktop GUI / window manager environment — x11, gnometools, grubmenu, lightdm, plymouth, plus per-user qtile/rofi/thunar/wm/essentials/kanata and system-level firefox/thunderbird/brave/spotify. |
 | `odem-hardening/` | `odem.hardening` | 0.4.0 | odem.base, ansible.posix, community.crypto | System-level hardening — firewall (iptables), apparmor, auditd, AIDE, fail2ban, Wazuh agent, CIS lockdown (clones `ansible-lockdown/DEBIAN13-CIS`). |
-| `odem-backup/` | `odem.backup` | 0.3.0 | odem.base, ansible.posix | Per-user backup restore — SSH keys, config, brave bookmarks, home directory. |
-| `odem-services/` | `odem.services` | 0.3.2 | odem.base, ansible.posix | Service deployment and configuration — OpenVPN server config from the `mps-openvpn` repo. First role pending. |
+| `odem-backup/` | `odem.backup` | 0.3.2 | odem.base, ansible.posix | Per-user backup restore — SSH keys, config, brave bookmarks, home directory. |
+| `odem-services/` | `odem.services` | 0.4.3 | odem.base, ansible.posix | Service deployment and configuration — OpenVPN server config from the `mps-openvpn` repo. First role pending. |
+| `odem-alloy/` | `odem.alloy` | 0.2.0 | odem.base, ansible.posix | Grafana Alloy agent deployment and configuration. |
+
+Collections `odem-os`, `odem-users`, `odem-terminal`, and `odem-desktop` (plus the `odem-base` anchor) are Fedora-ready — see [Platform support conventions](#platform-support-conventions). The remaining collections are still Debian 13 only.
 
 `manage/` hosts the cross-repo `Justfile` (status / pull / commit / force-install across all leaf collections — see [Build, install, run](#build-install-run)). `examples/` hosts reference inventory layouts under `examples/inventories/<env>/`.
 
@@ -78,6 +81,55 @@ Rules:
 - `notify:` references match the bare name of the handler task. Handler files (`handlers/main.yml`) follow the same convention.
 
 Do **not** reintroduce the historical `<ROLE_NAME> - <message>` prefix. The first thing a future reader of a play log needs is the action, not the file path.
+
+## Platform support conventions
+
+`odem.*` roles support the **Debian** and **RedHat** platform families. The platform gate lives exactly once, in `odem.base.identity` (`tasks/main.yml`):
+
+```yaml
+- name: Assert supported target platform
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['os_family'] in ['Debian', 'RedHat']
+    fail_msg: "This role supports Debian and RedHat family distributions only"
+    quiet: true
+```
+
+Leaf roles do **not** re-assert the platform — they branch per family with `when: ansible_facts['os_family'] == 'Debian'` / `== 'RedHat'` conditions. Debian-only features (debconf, `/etc/default/*`, tasksel, `update-alternatives`, apt sources templates) are gated to `== 'Debian'` and skipped on Fedora.
+
+### Package installation — dnf CLI pattern on RedHat
+
+All RedHat-family package installs go through the **`dnf` CLI** (`ansible.builtin.command: dnf install -y ...`), never `ansible.builtin.package`. Reason:
+
+- Fedora 45 ships Python 3.15, which breaks ansible-core 2.19 module execution (`dataclasses._is_type` removed) — the interpreter must be pinned (`ansible_python_interpreter: /usr/bin/python3.13`).
+- A pinned 3.13 interpreter lacks the `libdnf5` Python bindings the ansible `dnf` backend needs — `ansible.builtin.package` fails regardless of which interpreter is used.
+- The `dnf` CLI runs under the system Python (3.15) and is immune to both problems.
+
+Idempotency is approximated with `changed_when: "'Nothing to do' not in <register>.stdout"` — `dnf install -y` is a no-op when everything is already present. Do not switch RedHat paths back to `ansible.builtin.package`.
+
+### Per-family differences already encoded
+
+| Topic | Debian | RedHat (Fedora) |
+|---|---|---|
+| auto-upgrades | `unattended-upgrades` + apt-daily timers | `dnf-automatic.timer` |
+| locale | `/etc/locale.gen` + `/etc/default/locale` + debconf | `glibc-langpack-<lang>` + `/etc/locale.conf` |
+| keyboard | `keyboard-configuration` + `/etc/default/keyboard` | `/etc/vconsole.conf` + `/etc/X11/xorg.conf.d/00-keyboard.conf` |
+| console font | `console-setup` (Debian only) | — (skipped) |
+| admin group for sudo | `sudo` | `wheel` |
+| root shell/gecos | `chsh` / `chfn` (usermod refuses root) | `usermod -s` / `usermod -c` (Fedora 45 removed `chfn`/`chsh` from shadow-utils) |
+| vim | `vim-nox` + addon packages | `vim-enhanced` |
+| tmuxinator | apt package | `gem install tmuxinator` |
+| npm global root | `/usr/lib/node_modules` | `/usr/local/lib/node_modules` (`nvim_npm_global_root` default) |
+
+### Fedora 45 interpreter pinning
+
+Fedora 45 hosts need `dnf install -y python3.13` as a manual bootstrap prerequisite, then in host vars:
+
+```yaml
+ansible_python_interpreter: /usr/bin/python3.13
+```
+
+Until ansible-core supports Python 3.15, this pin is required on Fedora 45+.
 
 ## `odem.base.identity` — shared identity model
 
@@ -180,18 +232,17 @@ make clean              # remove tarballs + installed collections
 
 ### Cross-repo `Justfile` (`manage/Justfile`)
 
-Targets that span all 10 leaf + meta collections — run from `manage/` (path-relative to the sibling collections):
+Targets that span all 11 leaf collections — run from `manage/` (path-relative to the sibling collections):
 
 ```bash
 just                          # default → usage (just --list)
 just list-collections [inv]   # list installed collections in examples/inventories/<inv>
 just list-roles               # list every role in every collection with its description
 just git-clone                # clone every missing sibling repo from GitHub (fresh install)
-just git-clone                # clone every missing sibling repo from GitHub (fresh install)
 just git-status               # git status -sb per collection, plus latest commit
 just git-pull                 # git pull --ff-only per repo; skip dirty
 just git-commit 'msg'         # git add -A && commit -m 'msg' && push, every dirty repo
-just run-example <name> <inv> <playbook>  # run playbooks/<playbook>.yml against examples/inventories/<name>/inventory_<inv>.ini
+just run-example <name> <inv> <playbook> [args]  # run playbooks/<playbook>.yml against examples/inventories/<name>/inventory_<inv>.ini; extra args pass through to ansible-playbook (e.g. `-K` for become password)
 just install-forced           # ansible-galaxy collection build --force + install --force into ../.ansible/ansible_collections/
 ```
 
@@ -212,6 +263,13 @@ Until publishing is configured, `make install` in `odem-examples/` does the loca
 
 The following cleanup passes have been committed to the local repos:
 
+- **Fedora (RedHat family) support added to `odem-base`, `odem-os`, `odem-users`, `odem-terminal`** — the Debian-13-only assert in `odem.base.identity` was replaced by a family-based gate (`os_family in ['Debian', 'RedHat']`). Every Debian-specific task is now gated per family; RedHat paths install via the `dnf` CLI (see [Platform support conventions](#platform-support-conventions)). Affected roles: `package_manager`, `system_settings`, `system_tools` (os); `users` root block, `sudo` wheel mapping (users); `bash`, `fonts`, `kitty`, `nvim`, `python`, `rust`, `tmux`, `vim` (terminal). Fedora 45 added to every `meta/main.yml` platform list.
+- **`odem.users.sudo` — shared macros file** — the sudo macros are no longer expanded inline into each per-user sudoers file. A shared macros file (`sudo_macros_file`, default `/etc/sudoers.d/00_macros`) renders every `sudo_macros` entry as a `Cmnd_Alias`; each per-user file references the aliases by name (`alice ALL=(ALL) ADMIN_DEFAULT, ADMIN_DEBUG`). Both files are validated with `validate: visudo -cf %s` (visudo accepts cross-file alias references). `community.general` dependency dropped from `odem-users` (sudo was its only consumer) — rules are plain `ansible.builtin.copy` with mode `0440`.
+- **`odem.users.users` root block per-family** — root's shell/gecos edits use `chsh`/`chfn` on Debian (where usermod refuses root) and `usermod -s`/`-c` on RedHat (Fedora 45 removed `chfn`/`chsh` from shadow-utils). `chpasswd -e` and `chage -E` work on both.
+- **`odem.terminal.nvim` fixes** — `nvim_enable_apt_deps` renamed to `nvim_enable_deps` (per-family dependency lists now); `nvim_npm_global_root` default added (`/usr/local/lib/node_modules` on RedHat vs `/usr/lib/node_modules` on Debian — the `creates:` idempotency check needs it); per-user nvim config dir is pre-created at `0700` before the `remote_src` tree copy (with `remote_src` + directory src, `copy` applies `mode` to the destination dir itself — a `mode: "0600"` on the copy produced `drw-------` nvim dirs; `mode` dropped from the copy since it never reaches files under `remote_src`).
+- **`odem.terminal.vim` toggle rename** — `vim_enable_vim_nox` → `vim_enable_packages` (Fedora has no vim-nox; RedHat path installs `vim-enhanced` via dnf).
+- **`examples` inventory fix** — `admin_groups: [user_default_admin_group, user_default_config_group]` in `group_vars/all/odem_users.yml` was unquoted, so users' `groups` fields carried the literal strings instead of resolving to `admin`/`config` — the groups role created junk groups named `user_default_*` and the real `admin` group never existed (surfaced on a fresh Fedora VM as `chgrp failed: failed to look up group admin`). Fixed to `admin_groups: ["{{ user_default_admin_group }}", "{{ user_default_config_group }}"]`.
+- **`manage/Justfile` `run-example` passthrough** — extra args after the playbook name are passed through to `ansible-playbook` (`just run-example home vm bootstrap -K`).
 - **Task name prefix removed** — every `name:` field in `tasks/*.yml` and `handlers/*.yml` across all 9 collections had its `<ROLE> -` prefix stripped (140 files, 429 names). `notify:` references rewired to the new bare names.
 - **Dead options removed** from `argument_specs.yml` + matching defaults:
   - `odem-desktop/qtile`: `qtile_keepass_bin`, `qtile_keepass_db_path`, `qtile_screenlayout_hive_cmd` (keepass integration dropped; screenlayout cmd unused).
